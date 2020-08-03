@@ -25,9 +25,15 @@ else
 	exit 2
 fi
 
-get_worldwide_mirrors() {
-	echo "http://mirrors.kernel.org/archlinux"
-	_download 'https://www.archlinux.org/mirrorlist/?country=all&protocol=http&protocol=https&ip_version=4' | awk '/^## /{if ($2 == "Worldwide") { flag=1 } else { flag=0 } } /^#Server/ { if (flag) { sub(/\/\$repo.*/, ""); print $3 } }'
+get_country() {
+	_download "https://api.ip.sb/geoip" | grep -oP '(?<=country_code":")\w+'
+}
+
+get_mirrors() {
+	country=$1
+	
+	[ -z $country ] && country=$(get_country || echo -n "all")
+	_download "https://www.archlinux.org/mirrorlist/?country=$country&protocol=http&protocol=https&ip_version=4&use_mirror_status=on" | grep -oP '(?<=#Server = ).*(?=\$repo/)' || get_mirrors all
 }
 
 cpu_type=$(uname -m)
@@ -330,7 +336,7 @@ while getopts ":b:m:n:h" opt; do
 done
 shift $((OPTIND - 1))
 
-[ -z "$mirrors" ] && mirrors=$(get_worldwide_mirrors)
+[ -z "$mirrors" ] && mirrors=$(get_mirrors)
 
 
 if is_openvz; then
