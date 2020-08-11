@@ -58,7 +58,12 @@ download_and_extract_bootstrap() {
 	sha1sum -c sha1sums.txt || exit 1
 	tar -xpzf "$filename"
 	rm -f "$filename"
-	cp -L /etc/resolv.conf "/root.$cpu_type/etc"
+
+	if grep -E '^nameserver\s+127\.' /etc/resolv.conf > /dev/null; then
+		echo "nameserver 8.8.8.8" > "/root.$cpu_type/etc/resolv.conf"
+	else
+		cp -L /etc/resolv.conf "/root.$cpu_type/etc"
+	fi
 
 	# Mount options taked from arch-chroot script
 	mount -t proc proc -o nosuid,noexec,nodev "/root.$cpu_type/proc"
