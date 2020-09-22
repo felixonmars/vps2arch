@@ -45,7 +45,7 @@ download() {
 	local path="$1" x=
 	shift
 	for x in $mirrors; do
-		_download "$x/$path" && return 0
+		_download "$x$path" && return 0
 	done
 	return 1
 }
