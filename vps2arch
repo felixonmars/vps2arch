@@ -17,9 +17,9 @@ set -e
 
 # Gathering informations about actual environment.
 if command -v wget >/dev/null 2>&1; then
-	_download() { wget -O- "$@" ; }
+	_download() { wget -U vps2arch -O- "$@" ; }
 elif command -v curl >/dev/null 2>&1; then
-	_download() { curl -fL "$@" ; }
+	_download() { curl -A vps2arch -fL "$@" ; }
 else
 	echo "This script needs curl or wget" >&2
 	exit 2
