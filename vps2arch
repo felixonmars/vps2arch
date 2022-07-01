@@ -59,7 +59,7 @@ download_and_extract_bootstrap() {
 	tar -xpzf "$filename"
 	rm -f "$filename"
 
-	if grep -E '^nameserver\s+127\.' /etc/resolv.conf > /dev/null; then
+	if grep -E '^nameserver\s+127\.|^nameserver\s+10\.' /etc/resolv.conf > /dev/null; then
 		echo "nameserver 8.8.8.8" > "/root.$cpu_type/etc/resolv.conf"
 	else
 		cp -L /etc/resolv.conf "/root.$cpu_type/etc"
