@@ -51,11 +51,11 @@ download() {
 }
 
 download_and_extract_bootstrap() {
-	local sha1 filename
-	download iso/latest/sha1sums.txt | egrep "[[:digit:]]-$cpu_type.tar.gz" > "sha1sums.txt"
-	read -r sha1 filename < "sha1sums.txt"
+	local sha256 filename
+	download iso/latest/sha256sums.txt | egrep "[[:digit:]]-$cpu_type.tar.gz" > "sha256sums.txt"
+	read -r sha256 filename < "sha256sums.txt"
 	download "iso/latest/$filename" > "$filename"
-	sha1sum -c sha1sums.txt || exit 1
+	sha256sum -c sha256sums.txt || exit 1
 	tar -xpzf "$filename"
 	rm -f "$filename"
 
