@@ -33,7 +33,7 @@ get_mirrors() {
 	country=$1
 	
 	[ -z $country ] && country=$(get_country || echo -n "all")
-	_download "https://www.archlinux.org/mirrorlist/?country=$country&protocol=http&protocol=https&ip_version=4&use_mirror_status=on" | grep -oP '(?<=#Server = ).*(?=\$repo/)' || get_mirrors all
+	_download "https://archlinux.org/mirrorlist/?country=$country&protocol=http&protocol=https&ip_version=4&use_mirror_status=on" | grep -oP '(?<=#Server = ).*(?=\$repo/)' || get_mirrors all
 }
 
 cpu_type=$(uname -m)
