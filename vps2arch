@@ -52,7 +52,7 @@ download() {
 
 download_and_extract_bootstrap() {
 	local sha256 filename
-	download iso/latest/sha256sums.txt | egrep "[[:digit:]]-$cpu_type.tar.zst" > "sha256sums.txt"
+	download iso/latest/sha256sums.txt | grep -E "[[:digit:]]-$cpu_type.tar.zst" > "sha256sums.txt"
 	read -r sha256 filename < "sha256sums.txt"
 	download "iso/latest/$filename" > "$filename"
 	sha256sum -c sha256sums.txt || exit 1
@@ -149,7 +149,7 @@ install_packages() {
 
 restore_root_pass() {
 	# If the root password is not set, use vps2arch
-	if egrep -q '^root:[^$]' "/root.$cpu_type/root.passwd"; then
+	if grep -E -q '^root:[^$]' "/root.$cpu_type/root.passwd"; then
 		echo "root:vps2arch" | chpasswd
 	else
 		sed -i '/^root:/d' /etc/shadow
