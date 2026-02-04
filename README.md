@@ -66,7 +66,7 @@ Does it really work?
 
 Yes, it does!
 
-On the [Tested VPS Providers](https://gitlab.com/drizzt/vps2arch/wikis/Tested-VPS-Providers) wiki page you can find a list of **Tested VPS Providers**.
+On the new [Tested VPS Providers](https://github.com/felixonmars/vps2arch/wiki/Tested-VPS-Providers) wiki page you can find a list of **Tested VPS Providers**.
 
 Theoretically it should also work on **real** computers (running linux), but I think it's not worth it,
 because you can install it in the canonical way.
