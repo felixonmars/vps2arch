@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Copyright 2015, Timothy Redaelli <tredaelli@archlinux.info>
 
@@ -223,17 +223,17 @@ configure_bootloader() {
 }
 
 configure_network() {
-	local gateway dev ip
+	local dev gateway ip gateway6 ip6
 
-	dev=$(ls /sys/class/net | grep -v lo)
-	if [ -n "$(ip -4 route show default | awk '{ print $3 }')" ]; then
-		gateway=$(ip -4 route show default | awk '{ print $3 }')
-		set -- $(ip addr show dev "$dev" | awk '($1 == "inet") { print $2 }')
-	else
-		gateway=$(ip -6 route show default | awk '{ print $3 }')
-		set -- $(ip addr show dev "$dev" | awk '($1 == "inet6" && $2 !~ /^fe80/) { print $2 }')
+	dev=$(ip -brief link | awk '$2 == "UP" {split($1, r, "@"); print r[1]}')
+	if [ -n "$(ip -4 route show default)" ]; then
+		gateway=$(ip -4 route show default | grep "$dev" | awk '{ print $3 }')
+		ip=$(ip -4 -br addr show dev "$dev" scope global | awk '{ print $3 }')
 	fi
-	ip=$@
+	if [ -n "$(ip -6 route show default)" ]; then
+		gateway6=$(ip -6 route show default | grep "$dev" | awk '{ print $3 }')
+		ip6=$(ip -6 -br addr show dev "$dev" scope global | awk '{ print $3 }')
+	fi
 
 	# FIXME Not supported for "P2P" interfaces, such as venet, yet
 	if [ "$network" = "systemd-networkd" ]; then
@@ -242,23 +242,38 @@ configure_network() {
 			Name=$dev
 
 			[Network]
-			Gateway=$gateway
+			DNS=1.1.1.1
+
 		EOF
-		for ip in $ip; do
-			echo "Address=$ip"
-		done >> /etc/systemd/network/default.network
+		if [ -n "$gateway" ]; then
+			echo -e "[Address]\nAddress=$ip\n"
+			echo -e "[Route]\nGateway=$gateway\nGatewayOnlink=yes\n"
+		fi >> /etc/systemd/network/default.network
+		if [ -n "$gateway6" ]; then
+			echo -e "[Address]\nAddress=$ip6\n"
+			echo -e "[Route]\nGateway=$gateway6\nGatewayOnlink=yes\n"
+		fi >> /etc/systemd/network/default.network
 		systemctl enable systemd-networkd
 	elif [ "$network" = "netctl" ]; then
 		cat > /etc/netctl/default <<-EOF
 			Interface=$dev
 			Connection=ethernet
-			IP=static
-			Address=($ip)
 		EOF
-		if [ "$gateway" = "0.0.0.0" ]; then
-			echo 'Routes=(0.0.0.0/0)'
-		else
-			echo "Gateway=$gateway"
+		if [ -n "$gateway" ]; then
+			echo -e "IP=static\nAddress=($ip)"
+			if [ "$gateway" = "0.0.0.0" ]; then
+				echo 'Routes=(0.0.0.0/0)'
+			else
+				echo -e "Gateway=$gateway\n"
+			fi
+		fi >> /etc/netctl/default
+		if [ -n "$gateway6" ]; then
+			echo -e "IP6=static\nAddress6=($ip6)"
+			if [ "$gateway6" = "::" ]; then
+				echo 'Routes6=(::/0)'
+			else
+				echo -e "Gateway=$gateway6\n"
+			fi
 		fi >> /etc/netctl/default
 		netctl enable default
 	fi
